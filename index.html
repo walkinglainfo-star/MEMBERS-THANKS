@@ -2,71 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Walking in LA — Members Ticker (One-Shot)</title>
+  <title>WILA — Members Ticker + Fireworks (One-Shot)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root{
-      --speed:80s;
-      --fontsize:28px;
-      --gap:4rem;
-      --distance:0px;
+      --speed: 80s;      /* total scroll time: ?speed=70 faster, 95 slower */
+      --fontsize: 28px;  /* ?fontsize=32 */
+      --distance: 0px;   /* set by JS: content width + viewport */
     }
     html,body{
-      margin:0;padding:0;
-      background:rgba(0,0,0,0);
-      overflow:hidden;
-      height:80px;width:100%;
-      font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+      margin:0; padding:0; height:80px; width:100%;
+      overflow:hidden; background:rgba(0,0,0,0);
+      font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
     }
     .bar{
       height:80px; display:flex; align-items:center;
       background:rgba(0,0,0,0.65);
-      position:relative; pointer-events:none;
-      overflow:hidden;
-      opacity:1;
-      transition:opacity 2s ease;
+      position:relative; pointer-events:none; overflow:hidden;
+      opacity:1; transition: opacity 2s ease;
     }
-    .bar.hidden{
-      opacity:0;
-    }
+    .bar.hidden{ opacity:0; }
+
     .ticker{
-      white-space:nowrap;
-      font-size:var(--fontsize); font-weight:600; color:#fff;
-      text-shadow:0 0 3px rgba(255,255,255,0.3);
-      animation:fadeSlideIn 1.0s ease forwards;
-      opacity:0;
-    }
-    .inner{
-      display:inline-flex; gap:var(--gap);
-      will-change:transform;
-      animation:scroll var(--speed) linear 1 forwards; /* run once */
-    }
-    .seg{ display:inline-block; padding-left:1rem }
-
-    .sep{
-      animation: blink 1.5s infinite;
-      opacity:0.6;
+      white-space:nowrap; font-size:var(--fontsize); font-weight:600; color:#fff;
+      text-shadow:0 0 3px rgba(255,255,255,.28);  /* softer glow */
+      animation: fadeIn 0.8s ease forwards;
+      opacity:0; width:100vw;
     }
 
-    @keyframes scroll{
-      from{ transform:translateX(0) }
-      to  { transform:translateX(calc(-1 * var(--distance))) }
+    .track{ position:relative; width:100vw; overflow:hidden; }
+    .content{
+      display:inline-block; padding-left:1rem;
+      will-change: transform;
+      animation: scrollOnce var(--speed) linear 1 forwards; /* ONE time only */
     }
-    @keyframes fadeSlideIn{
-      from{ opacity:0; transform:translateY(12px) }
-      to  { opacity:1; transform:translateY(0) }
+
+    /* blinking separator dot */
+    .sep{ animation: blink 1.5s infinite; opacity:.6; }
+
+    /* fireworks overlay */
+    #fireworks{
+      position:absolute; top:0; left:0; width:100%; height:100%;
+      pointer-events:none; z-index:5;
     }
-    @keyframes blink{
-      0%,100%{ opacity:0.6 }
-      50%{ opacity:1 }
+
+    /* Animations */
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+    @keyframes scrollOnce{
+      from{ transform: translateX(100vw); }                       /* start off-screen right */
+      to  { transform: translateX(calc(-1 * var(--distance))); }  /* exit left past its width */
     }
+    @keyframes blink{ 0%,100%{opacity:.6} 50%{opacity:1} }
   </style>
 </head>
 <body>
   <div class="bar" id="bar">
+    <canvas id="fireworks"></canvas>
     <div class="ticker">
-      <div class="inner" id="inner">
-        <div class="seg" id="segA">
+      <div class="track">
+        <div class="content" id="content">
 💖 We thank you for every walk, every block, and the support! 💖 
 <span class="sep">•</span> ★ Walk Of Famers: James E. Woods 💕💕 · Mel Alvez 💕💕 · WiLLuMPJuH 
 <span class="sep">•</span> ⬆ Urban Explorers: nadijka 💕💕 · Gene Gray 
@@ -77,21 +71,87 @@
   </div>
 
   <script>
-    const segA=document.getElementById('segA');
-    const inner=document.getElementById('inner');
-    function measure(){
-      const width=segA.getBoundingClientRect().width + parseFloat(getComputedStyle(inner).gap||0);
-      document.documentElement.style.setProperty('--distance', Math.ceil(width)+'px');
-    }
-    window.addEventListener('load', measure);
-    window.addEventListener('resize', measure);
+    /* Measure distance and allow query tweaks (?speed=70&fontsize=32) */
+    (function(){
+      const content = document.getElementById('content');
+      const bar = document.getElementById('bar');
 
-    // when scroll animation finishes, fade out the bar
-    inner.addEventListener('animationend', () => {
-      const bar=document.getElementById('bar');
-      bar.classList.add('hidden');
-      setTimeout(()=>bar.style.display="none",2000); // hide after fade
-    });
+      const params = new URLSearchParams(location.search);
+      const speed = params.get('speed');
+      const fontsize = params.get('fontsize');
+      if(speed)   document.documentElement.style.setProperty('--speed', (isNaN(speed)? speed : speed+'s'));
+      if(fontsize)document.documentElement.style.setProperty('--fontsize', (isNaN(fontsize)? fontsize : fontsize+'px'));
+
+      function measure(){
+        const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        const w  = Math.ceil(content.getBoundingClientRect().width);
+        document.documentElement.style.setProperty('--distance', (w + vw) + 'px');
+      }
+      window.addEventListener('load', measure, {once:true});
+      window.addEventListener('resize', measure);
+
+      /* Fireworks overlay */
+      const canvas = document.getElementById('fireworks');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      let running = true;
+      let rafId = null;
+      let burstTimer = null;
+
+      function resizeCanvas(){
+        canvas.width = bar.clientWidth;
+        canvas.height = bar.clientHeight;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      function createFirework(){
+        const x = Math.random()*canvas.width;
+        const y = canvas.height * (0.35 + Math.random()*0.45); // keep bursts inside the 80px bar
+        const color = `hsl(${Math.random()*360},100%,60%)`;
+        for(let i=0;i<22;i++){
+          particles.push({
+            x, y,
+            angle: Math.random()*2*Math.PI,
+            speed: Math.random()*2.5+0.8,
+            life: 50 + Math.floor(Math.random()*20),
+            color
+          });
+        }
+      }
+
+      function loop(){
+        if(!running) return;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        particles.forEach(p=>{
+          p.x += Math.cos(p.angle)*p.speed;
+          p.y += Math.sin(p.angle)*p.speed;
+          p.life--;
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.max(p.life/70, 0);
+          ctx.fillRect(p.x,p.y,2,2);
+          ctx.globalAlpha = 1;
+        });
+        particles = particles.filter(p=>p.life>0);
+        rafId = requestAnimationFrame(loop);
+      }
+
+      burstTimer = setInterval(createFirework, 1100);
+      loop();
+
+      // When single scroll finishes, stop fireworks, fade out, then hide
+      content.addEventListener('animationend', () => {
+        // stop spawning new bursts
+        clearInterval(burstTimer);
+        // let existing particles finish ~1s, then stop the loop and fade out
+        setTimeout(()=>{
+          running = false;
+          if(rafId) cancelAnimationFrame(rafId);
+          bar.classList.add('hidden');
+          setTimeout(()=>{ bar.style.display = 'none'; }, 2000);
+        }, 1000);
+      }, {once:true});
+    })();
   </script>
 </body>
 </html>
