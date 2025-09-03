@@ -6,12 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root{
-      --speed:80s;      /* ?speed=70 faster, 95 slower */
-      --fontsize:28px;  /* ?fontsize=32 */
-      --gap:4rem;       /* ?gap=3rem */
-      --distance:0px;   /* auto-set by JS */
+      --speed:80s;
+      --fontsize:28px;
+      --gap:4rem;
+      --distance:0px;
     }
-    /* Only an 80px strip (no full-screen) */
     html,body{
       margin:0;padding:0;
       background:rgba(0,0,0,0);
@@ -19,12 +18,10 @@
       height:80px;width:100%;
       font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
     }
-
     .bar{
       height:80px; display:flex; align-items:center;
       background:rgba(0,0,0,0.65);
       position:relative; pointer-events:none;
-      /* sweeping shimmer behind text */
       overflow:hidden;
     }
     .bar::after{
@@ -32,18 +29,17 @@
       position:absolute; top:0; left:-40%;
       height:100%; width:40%;
       background:linear-gradient(120deg, rgba(255,255,255,0) 0%,
-                                           rgba(255,255,255,0.15) 50%,
+                                           rgba(255,255,255,0.12) 50%,
                                            rgba(255,255,255,0) 100%);
       filter:blur(2px);
       animation:shimmer 6s linear infinite;
     }
-
     .ticker{
       white-space:nowrap;
       font-size:var(--fontsize); font-weight:600; color:#fff;
-      /* animated glow + slide-in */
-      text-shadow:0 0 6px rgba(255,255,255,0.55);
-      animation:fadeSlideIn 1.0s ease forwards, glowPulse 3.2s ease-in-out infinite;
+      /* softer glow */
+      text-shadow:0 0 3px rgba(255,255,255,0.3);
+      animation:fadeSlideIn 1.0s ease forwards;
       opacity:0;
     }
     .inner{
@@ -52,6 +48,12 @@
       animation:scroll var(--speed) linear infinite;
     }
     .seg{ display:inline-block; padding-left:1rem }
+
+    /* blinking separator */
+    .sep{
+      animation: blink 1.5s infinite;
+      opacity:0.6;
+    }
 
     /* Animations */
     @keyframes scroll{
@@ -62,13 +64,13 @@
       from{ opacity:0; transform:translateY(12px) }
       to  { opacity:1; transform:translateY(0) }
     }
-    @keyframes glowPulse{
-      0%,100%{ text-shadow:0 0 6px rgba(255,255,255,0.55), 0 0 12px rgba(255,255,255,0.3) }
-      50%    { text-shadow:0 0 10px rgba(255,255,255,0.9), 0 0 22px rgba(255,255,255,0.6) }
-    }
     @keyframes shimmer{
-      0%  { left:-40% }
+      0%{ left:-40% }
       100%{ left:110% }
+    }
+    @keyframes blink{
+      0%,100%{ opacity:0.6 }
+      50%{ opacity:1 }
     }
   </style>
 </head>
@@ -77,10 +79,10 @@
     <div class="ticker">
       <div class="inner" id="inner">
         <div class="seg" id="segA">
-💖 We thank you for every walk, every block, and the support! 💖 • 
-★ Walk Of Famers: James E. Woods 💕💕 · Mel Alvez 💕💕 · WiLLuMPJuH • 
-⬆ Urban Explorers: nadijka 💕💕 · Gene Gray • 
-🏄 Sidewalk Surfers: Cecilia Wilson 💕💕 · Jay Walker 💕💕 · bdukstein 💕💕 · Joey B 💕💕 · marymcq2 💕💕 · Steve D 💕💕 · Amusing Kitty Cats on the Roam 💕💕 · MoonStar 💕💕 · Ricky Beltran 💕💕 · Shavkat Rakhmonov · SheClicksBricks · VorteX X👽 · E W · MC · westcoastg4life · PanDemick · Jamie Schmidt · Jennifer B · AMG Demon 😈 · Vic Lau · Da818_SP · Dan Walks LA · L.A.Bee🏖️ · Tom S · Derik · Jay · KESOPPE · Nicole · O W · Opossum Loves Food · Rob H · TheVeggie · Brian Bell · Christy ponce · Fancyplants · Full collapse. · realdeel13 · Ghosid · Otterly Free · Talvish · ana · Mtnbike Fan · Ozge · Jayceeloop · Joes lawn and snow · stan Kanely · Autumn Baker · Cc1234 · Chuck Fix All · Commodus · David Marshall · Deb E. · Jim Vavaroutsos · LILCSMOOTH0 · Maarten · Martin Kelly · VanGambler · kinda wild1 · BlueMax · Doku Shin · John_The_Reseller · Kimo · Rocket＇s Red Glare · Skippy＇s 🏠 House · Stucco Superstars · Vaclav ＆ Daniela Taylor Svoboda · m t · Anton Smith · Blake Carrington · Bob Bruno · Bruce Buege · Bryce · Chase and things · KingofPics 7 · MARVO · MIKE ＆ MARY · MelaninFire · Mr OT · Richard · Roy Explores · Thomas Osadsky · Tuk♥ · WWJAYD · YVR CAN · cigdeyicd5io6dsh · 陳陳 · Cordell N · Kenneth · Las Vegas Ann · Lopaka · DizStrike · Ian Lelen · JJthe Resilient Baked Beans RedPotatoShoeMan 🇨🇦 · Luis Garcia · AJ · Angie Aubergine · BXM Studios · Hellen · Jef Hall · Kevin Nin · Micka back home · Paul · Peachesx · Richard Lutz · Studderellaaa · Yesenia M. · Zaydrey · anorexic dyslexic · machuugoo c · Chip Hendo · Franz D · Madaly · Mark McCue · MartiniGuy · Melizard · Ruthie 🐝 · johnnyrocberry · Alejandrrroh · Jean · Lafl0cko Da Goat · QTpie509 · Sweet Bella · The Battle · lives in a singlewide · stewie
+💖 We thank you for every walk, every block, and the support! 💖 
+<span class="sep">•</span> ★ Walk Of Famers: James E. Woods 💕💕 · Mel Alvez 💕💕 · WiLLuMPJuH 
+<span class="sep">•</span> ⬆ Urban Explorers: nadijka 💕💕 · Gene Gray 
+<span class="sep">•</span> 🏄 Sidewalk Surfers: Cecilia Wilson 💕💕 · Jay Walker 💕💕 · bdukstein 💕💕 · Joey B 💕💕 · marymcq2 💕💕 · Steve D 💕💕 · Amusing Kitty Cats on the Roam 💕💕 · MoonStar 💕💕 · Ricky Beltran 💕💕 · Shavkat Rakhmonov · SheClicksBricks · VorteX X👽 · E W · MC · westcoastg4life · PanDemick · Jamie Schmidt · Jennifer B · AMG Demon 😈 · Vic Lau · Da818_SP · Dan Walks LA · L.A.Bee🏖️ · Tom S · Derik · Jay · KESOPPE · Nicole · O W · Opossum Loves Food · Rob H · TheVeggie · Brian Bell · Christy ponce · Fancyplants · Full collapse. · realdeel13 · Ghosid · Otterly Free · Talvish · ana · Mtnbike Fan · Ozge · Jayceeloop · Joes lawn and snow · stan Kanely · Autumn Baker · Cc1234 · Chuck Fix All · Commodus · David Marshall · Deb E. · Jim Vavaroutsos · LILCSMOOTH0 · Maarten · Martin Kelly · VanGambler · kinda wild1 · BlueMax · Doku Shin · John_The_Reseller · Kimo · Rocket＇s Red Glare · Skippy＇s 🏠 House · Stucco Superstars · Vaclav ＆ Daniela Taylor Svoboda · m t · Anton Smith · Blake Carrington · Bob Bruno · Bruce Buege · Bryce · Chase and things · KingofPics 7 · MARVO · MIKE ＆ MARY · MelaninFire · Mr OT · Richard · Roy Explores · Thomas Osadsky · Tuk♥ · WWJAYD · YVR CAN · cigdeyicd5io6dsh · 陳陳 · Cordell N · Kenneth · Las Vegas Ann · Lopaka · DizStrike · Ian Lelen · JJthe Resilient Baked Beans RedPotatoShoeMan 🇨🇦 · Luis Garcia · AJ · Angie Aubergine · BXM Studios · Hellen · Jef Hall · Kevin Nin · Micka back home · Paul · Peachesx · Richard Lutz · Studderellaaa · Yesenia M. · Zaydrey · anorexic dyslexic · machuugoo c · Chip Hendo · Franz D · Madaly · Mark McCue · MartiniGuy · Melizard · Ruthie 🐝 · johnnyrocberry · Alejandrrroh · Jean · Lafl0cko Da Goat · QTpie509 · Sweet Bella · The Battle · lives in a singlewide · stewie
         </div>
         <div class="seg" id="segB"></div>
       </div>
@@ -88,16 +90,7 @@
   </div>
 
   <script>
-    /* URL tweaks: ?speed=70&fontsize=32&gap=3rem */
     (function(){
-      const params=new URLSearchParams(location.search);
-      const speed=params.get('speed');
-      const fontsize=params.get('fontsize');
-      const gap=params.get('gap');
-      if(speed)   document.documentElement.style.setProperty('--speed', (isNaN(speed)? speed : speed+'s'));
-      if(fontsize)document.documentElement.style.setProperty('--fontsize', (isNaN(fontsize)? fontsize : fontsize+'px'));
-      if(gap)     document.documentElement.style.setProperty('--gap', gap);
-
       const segA=document.getElementById('segA');
       const segB=document.getElementById('segB');
       segB.innerHTML=segA.innerHTML; // duplicate for seamless loop
