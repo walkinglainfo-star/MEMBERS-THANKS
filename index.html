@@ -2,96 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Walking in LA — Members Ticker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    :root {
-      --speed: 80s;       /* tweak via ?speed=70 */
-      --fontsize: 28px;   /* ?fontsize=32 */
-      --opacity: 1.0;     /* overall text opacity */
-      --gap: 4rem;        /* ?gap=3rem */
-      --distance: 0px;    /* auto-set by JS */
+    :root{
+      --speed:80s;      /* ?speed=70 faster, 95 slower */
+      --fontsize:28px;  /* ?fontsize=32 */
+      --gap:4rem;       /* ?gap=3rem */
+      --distance:0px;   /* auto-set by JS */
     }
-    * { box-sizing: border-box }
+    /* Only an 80px strip (no full-screen) */
+    html,body{
+      margin:0;padding:0;
+      background:rgba(0,0,0,0);
+      overflow:hidden;
+      height:80px;width:100%;
+      font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    }
 
-    /* lock doc height so only ticker shows */
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: rgba(0,0,0,0);
-      overflow: hidden;
-      height: 80px;   /* ticker height only */
-      width: 100%;
+    .bar{
+      height:80px; display:flex; align-items:center;
+      background:rgba(0,0,0,0.65);
+      position:relative; pointer-events:none;
+      /* sweeping shimmer behind text */
+      overflow:hidden;
     }
-    .bar {
-      position: relative;   /* no full-screen pinning */
-      height: 80px;
-      display: flex;
-      align-items: center;
-      background: rgba(0,0,0,0.65);
-      pointer-events: none;
+    .bar::after{
+      content:"";
+      position:absolute; top:0; left:-40%;
+      height:100%; width:40%;
+      background:linear-gradient(120deg, rgba(255,255,255,0) 0%,
+                                           rgba(255,255,255,0.15) 50%,
+                                           rgba(255,255,255,0) 100%);
+      filter:blur(2px);
+      animation:shimmer 6s linear infinite;
     }
-    .ticker {
-      position: relative;
-      white-space: nowrap;
-      overflow: hidden;
-      font-size: var(--fontsize);
-      font-weight: 600;
-      color: #f9f9f9;
-      text-shadow: 0 0 6px rgba(255,255,255,0.3);
-      opacity: 0;
-      animation: fadeSlideIn 1.2s ease forwards;
-    }
-    .ticker .inner {
-      display: inline-flex;
-      gap: var(--gap);
-      will-change: transform;
-      animation: scroll var(--speed) linear infinite;
-    }
-    .seg { display: inline-block; padding-left: 1rem }
 
-    @keyframes scroll {
-      from { transform: translateX(0) }
-      to   { transform: translateX(calc(-1 * var(--distance))) }
+    .ticker{
+      white-space:nowrap;
+      font-size:var(--fontsize); font-weight:600; color:#fff;
+      /* animated glow + slide-in */
+      text-shadow:0 0 6px rgba(255,255,255,0.55);
+      animation:fadeSlideIn 1.0s ease forwards, glowPulse 3.2s ease-in-out infinite;
+      opacity:0;
     }
-    @keyframes fadeSlideIn {
-      from { opacity: 0; transform: translateY(14px) }
-      to   { opacity: 1; transform: translateY(0) }
+    .inner{
+      display:inline-flex; gap:var(--gap);
+      will-change:transform;
+      animation:scroll var(--speed) linear infinite;
     }
-    .glow {
-      position: absolute; left: 0; right: 0; top: -1px; height: 2px;
-      background: linear-gradient(90deg, rgba(255,255,255,0.0), rgba(255,255,255,0.8), rgba(255,255,255,0.0));
-      filter: blur(1px); opacity: .8;
+    .seg{ display:inline-block; padding-left:1rem }
+
+    /* Animations */
+    @keyframes scroll{
+      from{ transform:translateX(0) }
+      to  { transform:translateX(calc(-1 * var(--distance))) }
+    }
+    @keyframes fadeSlideIn{
+      from{ opacity:0; transform:translateY(12px) }
+      to  { opacity:1; transform:translateY(0) }
+    }
+    @keyframes glowPulse{
+      0%,100%{ text-shadow:0 0 6px rgba(255,255,255,0.55), 0 0 12px rgba(255,255,255,0.3) }
+      50%    { text-shadow:0 0 10px rgba(255,255,255,0.9), 0 0 22px rgba(255,255,255,0.6) }
+    }
+    @keyframes shimmer{
+      0%  { left:-40% }
+      100%{ left:110% }
     }
   </style>
 </head>
 <body>
   <div class="bar">
-    <div class="ticker" id="ticker">
+    <div class="ticker">
       <div class="inner" id="inner">
         <div class="seg" id="segA">
-💖 We thank you for every walk, every block and the support! 💖 • 
+💖 We thank you for every walk, every block, and the support! 💖 • 
 ★ Walk Of Famers: James E. Woods 💕💕 · Mel Alvez 💕💕 · WiLLuMPJuH • 
 ⬆ Urban Explorers: nadijka 💕💕 · Gene Gray • 
 🏄 Sidewalk Surfers: Cecilia Wilson 💕💕 · Jay Walker 💕💕 · bdukstein 💕💕 · Joey B 💕💕 · marymcq2 💕💕 · Steve D 💕💕 · Amusing Kitty Cats on the Roam 💕💕 · MoonStar 💕💕 · Ricky Beltran 💕💕 · Shavkat Rakhmonov · SheClicksBricks · VorteX X👽 · E W · MC · westcoastg4life · PanDemick · Jamie Schmidt · Jennifer B · AMG Demon 😈 · Vic Lau · Da818_SP · Dan Walks LA · L.A.Bee🏖️ · Tom S · Derik · Jay · KESOPPE · Nicole · O W · Opossum Loves Food · Rob H · TheVeggie · Brian Bell · Christy ponce · Fancyplants · Full collapse. · realdeel13 · Ghosid · Otterly Free · Talvish · ana · Mtnbike Fan · Ozge · Jayceeloop · Joes lawn and snow · stan Kanely · Autumn Baker · Cc1234 · Chuck Fix All · Commodus · David Marshall · Deb E. · Jim Vavaroutsos · LILCSMOOTH0 · Maarten · Martin Kelly · VanGambler · kinda wild1 · BlueMax · Doku Shin · John_The_Reseller · Kimo · Rocket＇s Red Glare · Skippy＇s 🏠 House · Stucco Superstars · Vaclav ＆ Daniela Taylor Svoboda · m t · Anton Smith · Blake Carrington · Bob Bruno · Bruce Buege · Bryce · Chase and things · KingofPics 7 · MARVO · MIKE ＆ MARY · MelaninFire · Mr OT · Richard · Roy Explores · Thomas Osadsky · Tuk♥ · WWJAYD · YVR CAN · cigdeyicd5io6dsh · 陳陳 · Cordell N · Kenneth · Las Vegas Ann · Lopaka · DizStrike · Ian Lelen · JJthe Resilient Baked Beans RedPotatoShoeMan 🇨🇦 · Luis Garcia · AJ · Angie Aubergine · BXM Studios · Hellen · Jef Hall · Kevin Nin · Micka back home · Paul · Peachesx · Richard Lutz · Studderellaaa · Yesenia M. · Zaydrey · anorexic dyslexic · machuugoo c · Chip Hendo · Franz D · Madaly · Mark McCue · MartiniGuy · Melizard · Ruthie 🐝 · johnnyrocberry · Alejandrrroh · Jean · Lafl0cko Da Goat · QTpie509 · Sweet Bella · The Battle · lives in a singlewide · stewie
         </div>
         <div class="seg" id="segB"></div>
       </div>
-      <div class="glow"></div>
     </div>
   </div>
 
   <script>
-    (function() {
-      const params = new URLSearchParams(window.location.search);
-      const speed = params.get('speed');
-      const fontsize = params.get('fontsize');
-      const opacity = params.get('opacity');
-      const gap = params.get('gap');
-      if (speed) document.documentElement.style.setProperty('--speed', (isNaN(speed)? speed : speed+'s'));
-      if (fontsize) document.documentElement.style.setProperty('--fontsize', (isNaN(fontsize)? fontsize : fontsize+'px'));
-      if (opacity) document.documentElement.style.setProperty('--opacity', opacity);
-      if (gap) document.documentElement.style.setProperty('--gap', gap);
+    /* URL tweaks: ?speed=70&fontsize=32&gap=3rem */
+    (function(){
+      const params=new URLSearchParams(location.search);
+      const speed=params.get('speed');
+      const fontsize=params.get('fontsize');
+      const gap=params.get('gap');
+      if(speed)   document.documentElement.style.setProperty('--speed', (isNaN(speed)? speed : speed+'s'));
+      if(fontsize)document.documentElement.style.setProperty('--fontsize', (isNaN(fontsize)? fontsize : fontsize+'px'));
+      if(gap)     document.documentElement.style.setProperty('--gap', gap);
 
       const segA=document.getElementById('segA');
       const segB=document.getElementById('segB');
@@ -99,7 +104,7 @@
 
       const inner=document.getElementById('inner');
       function measure(){
-        const width=segA.getBoundingClientRect().width + parseFloat(getComputedStyle(inner).gap || 0);
+        const width=segA.getBoundingClientRect().width + parseFloat(getComputedStyle(inner).gap||0);
         document.documentElement.style.setProperty('--distance', Math.ceil(width)+'px');
       }
       window.addEventListener('load', measure);
@@ -108,3 +113,4 @@
   </script>
 </body>
 </html>
+
