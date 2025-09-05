@@ -1,70 +1,129 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>WILA — Members Ticker + Neon Fireworks (One-Shot)</title>
+  <title>Members — Thanks Ticker (One-Pass Neon Edition)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root{
-      --speed: 80s;      /* total scroll time: ?speed=70 faster, 95 slower */
-      --fontsize: 28px;  /* ?fontsize=32 */
-      --distance: 0px;   /* set by JS: content width + viewport */
+      --speed: 120s;   /* slower by default; override with ?speed=140 (seconds) */
+      --fontsize: 28px;/* override with ?fontsize=32 (px) */
+      --distance: 0px; /* set by JS: content width + viewport */
     }
-    /* render as an 80px strip (overlay-friendly) */
+
+    /* Transparent page; only the strip is black */
     html,body{
       margin:0; padding:0; height:80px; width:100%;
-      overflow:hidden; background:#000;   /* solid black background */
+      overflow:hidden; background:transparent;
       font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
     }
+
+    /* Black ticker bar (overlay look) */
     .bar{
       height:80px; display:flex; align-items:center;
-      background:#000;   /* solid black strip */
-      position:relative; pointer-events:none; overflow:hidden;
-      opacity:1; transition: opacity 2s ease;
+      background:#000; position:relative; overflow:hidden; pointer-events:none;
+      opacity:1; transition:opacity 1.6s ease;
     }
     .bar.hidden{ opacity:0; }
 
-    .ticker{
-      white-space:nowrap; font-size:var(--fontsize); font-weight:600; color:#fff;
-      text-shadow:0 0 3px rgba(255,255,255,.28);  /* softer text glow */
-      animation: fadeIn 0.8s ease forwards;
-      opacity:0; width:100vw;
+    /* Subtle vertical “float” to give life */
+    .bar .float{
+      width:100%; display:flex; align-items:center;
+      animation: floatY 6s ease-in-out infinite;
     }
+    @keyframes floatY{
+      0%,100%{ transform: translateY(0) }
+      50%    { transform: translateY(-2px) }
+    }
+
+    /* Ticker text & effects */
+    .ticker{
+      white-space:nowrap; font-size:var(--fontsize); font-weight:700; color:#fff;
+      opacity:0; animation:fadeIn 0.9s ease forwards;
+      /* soft neon edge */
+      text-shadow: 0 0 2px rgba(255,255,255,.35), 0 0 8px rgba(0,255,255,.15);
+      position:relative; z-index:6;
+    }
+
+    /* A gentle neon shimmer on the text itself */
+    .ticker .neon{
+      display:inline-block;
+      background: linear-gradient(90deg, #fff, #0ff, #f0f);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 2px rgba(255,255,255,.25));
+      animation: hue 12s linear infinite;
+    }
+    @keyframes hue{
+      0%   { filter: hue-rotate(0deg) drop-shadow(0 0 2px rgba(255,255,255,.25)); }
+      100% { filter: hue-rotate(360deg) drop-shadow(0 0 2px rgba(255,255,255,.25)); }
+    }
+
     .track{ position:relative; width:100vw; overflow:hidden; }
     .content{
-      display:inline-block; padding-left:1rem;
-      will-change: transform;
-      animation: scrollOnce var(--speed) linear 1 forwards; /* ONE pass only */
+      display:inline-block; padding-left:1rem; will-change: transform;
+      /* ONE PASS ONLY */
+      animation: scrollOnce var(--speed) linear 1 forwards;
     }
 
-    /* blinking separator dot */
-    .sep{ animation: blink 1.5s infinite; opacity:.6; }
-
-    /* fireworks overlay (on top of the bar) */
-    #fireworks{
-      position:absolute; top:0; left:0; width:100%; height:100%;
-      pointer-events:none; z-index:5;
+    /* Dots between groups: brighter blink in cyan-white */
+    .sep{
+      animation: blink 1.2s infinite;
+      opacity:.6;
+    }
+    @keyframes blink{
+      0%,100%{ opacity:.35; color:#ffffff; text-shadow:0 0 2px rgba(255,255,255,.3) }
+      50%    { opacity:1; color:#00ffff; text-shadow:0 0 10px rgba(0,255,255,.8) }
     }
 
-    /* Animations */
-    @keyframes fadeIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+    /* Mild sweep above the bar for polish */
+    .bar::after{
+      content:""; position:absolute; top:0; left:-30%; height:100%; width:35%;
+      background:linear-gradient(120deg, rgba(255,255,255,0) 0%,
+                                          rgba(255,255,255,0.14) 50%,
+                                          rgba(255,255,255,0) 100%);
+      filter:blur(2px); z-index:4;
+      animation: shimmer 7s linear infinite;
+    }
+    @keyframes shimmer{ 0%{left:-30%} 100%{left:110%} }
+
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
     @keyframes scrollOnce{
-      from{ transform: translateX(100vw); }
-      to  { transform: translateX(calc(-1 * var(--distance))); }
+      from{ transform: translateX(100vw) }               /* start off-screen right */
+      to  { transform: translateX(calc(-1 * var(--distance))) } /* exit fully left */
     }
-    @keyframes blink{ 0%,100%{opacity:.6} 50%{opacity:1} }
+
+    /* Fireworks canvas on top of the bar */
+    #fireworks{
+      position:absolute; inset:0; width:100%; height:100%;
+      pointer-events:none; z-index:8;
+    }
+
+    /* Optional: pin to the bottom like a lower-third
+       Uncomment if you want it always bottom:
+    .bar{ position:fixed; left:0; right:0; bottom:0; }
+    */
   </style>
 </head>
 <body>
   <div class="bar" id="bar">
     <canvas id="fireworks"></canvas>
-    <div class="ticker">
-      <div class="track">
-        <div class="content" id="content">
-💖 We thank you for every walk, every block, and the support! 💖 
-<span class="sep">•</span> ★ Walk Of Famers: James E. Woods 💕💕 · Mel Alvez 💕💕 · WiLLuMPJuH 
-<span class="sep">•</span> ⬆ Urban Explorers: nadijka 💕💕 · Gene Gray 
-<span class="sep">•</span> 🏄 Sidewalk Surfers: Cecilia Wilson 💕💕 · Jay Walker 💕💕 · bdukstein 💕💕 · Joey B 💕💕 · marymcq2 💕💕 · Steve D 💕💕 · Amusing Kitty Cats on the Roam 💕💕 · MoonStar 💕💕 · Ricky Beltran 💕💕 · Shavkat Rakhmonov · SheClicksBricks · VorteX X👽 · E W · MC · westcoastg4life · PanDemick · Jamie Schmidt · Jennifer B · AMG Demon 😈 · Vic Lau · Da818_SP · Dan Walks LA · L.A.Bee🏖️ · Tom S · Derik · Jay · KESOPPE · Nicole · O W · Opossum Loves Food · Rob H · TheVeggie · Brian Bell · Christy ponce · Fancyplants · Full collapse. · realdeel13 · Ghosid · Otterly Free · Talvish · ana · Mtnbike Fan · Ozge · Jayceeloop · Joes lawn and snow · stan Kanely · Autumn Baker · Cc1234 · Chuck Fix All · Commodus · David Marshall · Deb E. · Jim Vavaroutsos · LILCSMOOTH0 · Maarten · Martin Kelly · VanGambler · kinda wild1 · BlueMax · Doku Shin · John_The_Reseller · Kimo · Rocket＇s Red Glare · Skippy＇s 🏠 House · Stucco Superstars · Vaclav ＆ Daniela Taylor Svoboda · m t · Anton Smith · Blake Carrington · Bob Bruno · Bruce Buege · Bryce · Chase and things · KingofPics 7 · MARVO · MIKE ＆ MARY · MelaninFire · Mr OT · Richard · Roy Explores · Thomas Osadsky · Tuk♥ · WWJAYD · YVR CAN · cigdeyicd5io6dsh · 陳陳 · Cordell N · Kenneth · Las Vegas Ann · Lopaka · DizStrike · Ian Lelen · JJthe Resilient Baked Beans RedPotatoShoeMan 🇨🇦 · Luis Garcia · AJ · Angie Aubergine · BXM Studios · Hellen · Jef Hall · Kevin Nin · Micka back home · Paul · Peachesx · Richard Lutz · Studderellaaa · Yesenia M. · Zaydrey · anorexic dyslexic · machuugoo c · Chip Hendo · Franz D · Madaly · Mark McCue · MartiniGuy · Melizard · Ruthie 🐝 · johnnyrocberry · Alejandrrroh · Jean · Lafl0cko Da Goat · QTpie509 · Sweet Bella · The Battle · lives in a singlewide · stewie
+    <div class="float">
+      <div class="ticker">
+        <div class="track">
+          <div class="content neon" id="content">
+            <!-- ✅ INTRO MESSAGE FIRST -->
+            <strong>Legends, this journey runs on you. Thanks for walking with me and keeping every block alive. Your support truly keeps us going!</strong>
+            <span class="sep">•</span>
+            <!-- ✅ TODO: PASTE YOUR NAMES LINE HERE (intro + bold levels + names + 💕💕), e.g.:
+            <strong>Walk Of Famers:</strong> Name A 💕💕 · Name B · Name C
+            <span class="sep">•</span>
+            <strong>Urban Explorers:</strong> Name D · Name E 💕💕 · Name F
+            <span class="sep">•</span>
+            <strong>Sidewalk Surfers:</strong> Name G · Name H · Name I 💕💕
+            -->
+          </div>
         </div>
       </div>
     </div>
@@ -72,17 +131,15 @@
 
   <script>
   (function(){
-    const content = document.getElementById('content');
-    const bar = document.getElementById('bar');
-
-    /* URL tweaks: ?speed=70&fontsize=32 */
-    const params = new URLSearchParams(location.search);
-    const speed = params.get('speed');
+    /* URL tweaks: ?speed=140&fontsize=32 */
+    const params   = new URLSearchParams(location.search);
+    const speed    = params.get('speed');
     const fontsize = params.get('fontsize');
     if (speed)   document.documentElement.style.setProperty('--speed', (isNaN(speed)? speed : speed+'s'));
     if (fontsize)document.documentElement.style.setProperty('--fontsize', (isNaN(fontsize)? fontsize : fontsize+'px'));
 
-    /* Measure travel distance = content width + viewport width */
+    /* Measure total travel distance = content width + viewport */
+    const content = document.getElementById('content');
     function measure(){
       const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
       const w  = Math.ceil(content.getBoundingClientRect().width);
@@ -91,30 +148,26 @@
     window.addEventListener('load', measure, {once:true});
     window.addEventListener('resize', measure);
 
-    /* --- Neon Fireworks --- */
-    const canvas = document.getElementById('fireworks');
-    const ctx = canvas.getContext('2d');
+    /* --- Neon Fireworks (Vegas-bright) --- */
+    const bar     = document.getElementById('bar');
+    const canvas  = document.getElementById('fireworks');
+    const ctx     = canvas.getContext('2d');
     let particles = [];
-    let running = true;
-    let rafId = null;
-    let burstTimer = null;
-
-    function resizeCanvas(){
-      canvas.width = bar.clientWidth;
-      canvas.height = bar.clientHeight;
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    let rafId     = null;
+    let burstTimer= null;
+    function resizeCanvas(){ canvas.width = bar.clientWidth; canvas.height = bar.clientHeight; }
+    resizeCanvas(); window.addEventListener('resize', resizeCanvas);
 
     function createFirework(){
       const x = Math.random()*canvas.width;
-      const y = canvas.height * (0.35 + Math.random()*0.45);
-      const color = `hsl(${Math.random()*360},100%,70%)`;  // brighter neon hues
-      for (let i = 0; i < 25; i++){
+      const y = canvas.height * (0.30 + Math.random()*0.55); // keep inside strip
+      const hue = Math.random()*360;
+      const color = 'hsl(' + hue + ',100%,70%)'; // neon bright
+      for (let i = 0; i < 28; i++) {
         particles.push({
           x, y,
           angle: Math.random()*2*Math.PI,
-          speed: Math.random()*2.8 + 1,
+          speed: Math.random()*3.0 + 1.0,
           life: 60 + Math.floor(Math.random()*30),
           color
         });
@@ -122,37 +175,38 @@
     }
 
     function loop(){
-      if (!running) return;
       ctx.clearRect(0,0,canvas.width,canvas.height);
       particles.forEach(p=>{
         p.x += Math.cos(p.angle)*p.speed;
         p.y += Math.sin(p.angle)*p.speed;
         p.life--;
-
-        ctx.shadowBlur = 12;              // strong neon glow
+        ctx.shadowBlur = 14;             // neon glow
         ctx.shadowColor = p.color;
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = Math.max(p.life/80, 0);
-        ctx.fillRect(p.x, p.y, 3, 3);
+        ctx.globalAlpha = Math.max(p.life/85, 0);
+        ctx.fillRect(p.x, p.y, 3, 3);    // bright pixel
         ctx.globalAlpha = 1;
       });
       particles = particles.filter(p=>p.life>0);
       rafId = requestAnimationFrame(loop);
     }
 
-    // 🌟 immediate burst at start
+    // Start fireworks immediately; keep popping while scrolling
     createFirework();
-    burstTimer = setInterval(createFirework, 1000);  // frequent bursts
+    burstTimer = setInterval(createFirework, 950);
     loop();
 
-    /* When scroll finishes: stop bursts, let sparks finish, then fade+hide */
+    // When the single scroll ends: big finale, then fade & hide
     content.addEventListener('animationend', () => {
+      // finale burst
+      for (let i=0;i<3;i++) setTimeout(createFirework, i*180);
+
+      // stop spawning; let sparks finish ~1.2s, then fade out bar
       clearInterval(burstTimer);
       setTimeout(()=>{
-        running = false;
-        if (rafId) cancelAnimationFrame(rafId);
+        cancelAnimationFrame(rafId);
         bar.classList.add('hidden');
-        setTimeout(()=>{ bar.style.display = 'none'; }, 2000);
+        setTimeout(()=>{ bar.style.display = 'none'; }, 1600);
       }, 1200);
     }, {once:true});
   })();
